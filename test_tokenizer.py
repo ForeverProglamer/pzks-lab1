@@ -72,7 +72,8 @@ class TestTokenMappers(TestCase):
 class TestTokenize(TestCase):
     def test_skips_whitespaces(self) -> None:
         expected_tokens_count = 3
-        self.assertEqual(len(tokenize("  a + b ")), expected_tokens_count)
+        tokens, _ = tokenize("  a + b ")
+        self.assertEqual(len(tokens), expected_tokens_count)
 
     @parametrize(
         "source_code,expected_result",
@@ -114,21 +115,24 @@ class TestTokenize(TestCase):
     def test_identifies_all_supported_lexemes(
         self, source_code: str, expected_result: list[Token]
     ) -> None:
-        result = tokenize(source_code)
-        for token, expected_token in zip(result, expected_result, strict=True):
+        tokens, errors = tokenize(source_code)
+        for token, expected_token in zip(tokens, expected_result, strict=True):
             self.assertEqual(token.type, expected_token.type)
             self.assertEqual(token.lexeme, expected_token.lexeme)
             self.assertEqual(token.position.stop, expected_token.position.stop)
+        self.assertEqual(errors, [])
 
     @parametrize(
-        "source_code,error_message", [
-            ("a$+b", "position 1"),
-            ("#-_", "position 0"),
+        "source_code,expected_error_messages", [
+            ("a$+b", ["position 1"]),
+            ("#-_", ["position 0", "position 2"]),
         ]
     )
     def test_raises_error_when_encounters_unsupported_lexeme(
-        self, source_code: str, error_message: str
+        self, source_code: str, expected_error_messages: list[str]
     ) -> None:
-        with self.assertRaisesRegex(UnsupportedLexemeError, error_message):
-            tokenize(source_code)
-
+        _, errors = tokenize(source_code)
+        for error, expected_error_message in zip(
+            errors, expected_error_messages, strict=True
+        ):
+            self.assertTrue(expected_error_message in str(error))

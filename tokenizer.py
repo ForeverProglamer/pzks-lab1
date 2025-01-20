@@ -51,13 +51,13 @@ class UnsupportedLexemeError(Exception):
         )
 
 
-def tokenize(source_code: str) -> list[Token]:
-    """Identify tokens in a source code.
+TokenizeResult = tuple[list[Token], list[UnsupportedLexemeError]]
 
-    Raises the `UnsupportedLexemeError` if encounters an unknown or malformed 
-    lexeme.
-    """
+
+def tokenize(source_code: str) -> TokenizeResult:
+    """Identify tokens in a source code."""
     tokens = []
+    errors = []
     pos = 0
     while pos != len(source_code):
         char = source_code[pos]
@@ -114,8 +114,9 @@ def tokenize(source_code: str) -> list[Token]:
         elif re.match(WHITESPACE, char):
             pos += 1
         else:
-            raise UnsupportedLexemeError(source_code[pos], pos)
-    return tokens
+            errors.append(UnsupportedLexemeError(source_code[pos], pos))
+            pos += 1
+    return tokens, errors
 
 
 def _map_source_code_to_identifier_token(
