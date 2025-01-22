@@ -1,3 +1,5 @@
+import functools as ft
+
 from tokenizer import Token, TokenType
 
 VALID_START_OF_EXPRESSION = {
@@ -73,14 +75,15 @@ class SyntaxAnalyzer:
             self._error(f"Expression can't end with {token.type!r}")
 
     def _analyze_following_tokens(self) -> None:
-        previous = None
-        for token in self.tokens:
-            if previous and token.type not in VALID_FOLLOW_SETS[previous.type]:
+        def func(prev: Token | None, curr: Token) -> Token:
+            if prev and curr.type not in VALID_FOLLOW_SETS[prev.type]:
                 self._error(
-                    f"{token.position}: {previous.type!r} can't be followed "
-                    f"by {token.type!r}"
+                    f"{curr.position}: {prev.type!r} can't be followed "
+                    f"by {curr.type!r}"
                 )
-            previous = token
+            return curr
+
+        ft.reduce(func, self.tokens, None)
 
     def _analyze_parentheses_usage(self) -> None:
         stack: list[Token] = []
