@@ -16,7 +16,10 @@ def main() -> None:
             f"Recognized tokens: {format_tokens(tokens)}\n\t",
             errors
         )
-    print(f"Given expression is completely valid: '{expression}'")
+    print(
+        f"Given expression is completely valid: '{expression}'\n"
+        f"Recognized tokens: {format_tokens(tokens)}"
+    )
 
 
 if __name__ == "__main__":
