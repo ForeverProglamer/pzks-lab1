@@ -78,8 +78,8 @@ class SyntaxAnalyzer:
         def func(prev: Token | None, curr: Token) -> Token:
             if prev and curr.type not in VALID_FOLLOW_SETS[prev.type]:
                 self._error(
-                    f"{curr.position}: {prev.type!r} can't be followed "
-                    f"by {curr.type!r}"
+                    f"{curr.position}: {_format_token_info(prev)} "
+                    f"can't be followed by {_format_token_info(curr)}"
                 )
             return curr
 
@@ -93,15 +93,23 @@ class SyntaxAnalyzer:
             elif token.type == TokenType.CLOSING_PARENTHESIS:
                 if not stack:
                     self._error(
-                        f"{token.position}: {TokenType.CLOSING_PARENTHESIS!r} "
-                        "has never been openned with "
-                        f"{TokenType.OPENING_PARENTHESIS!r}"
+                        f"{token.position}: ')' has never been openned with '('"
                     )
                 else:
                     stack.pop()
 
         for token in stack:
             self._error(
-                f"{token.position}: {TokenType.OPENING_PARENTHESIS!r} "
-                f"has never been closed with {TokenType.CLOSING_PARENTHESIS!r}"
+                f"{token.position}: '(' has never been closed with ')'"
             )
+
+
+_NON_SELF_DESCRIPTIVE_TOKENS = {TokenType.IDENTIFIER, TokenType.NUMBER}
+
+
+def _format_token_info(token: Token) -> str:
+    text = f"Token(type='{token.type}')"
+    if token.type in _NON_SELF_DESCRIPTIVE_TOKENS:
+        text = f"Token(type='{token.type}', lexeme='{token.lexeme}')"
+    return text
+

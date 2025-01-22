@@ -13,16 +13,14 @@ OPERATION_TO_TOKEN_TYPE = {
 }
 
 EMPTY_PARENTHESES_ERROR_MSG = (
-    f"{TokenType.OPENING_PARENTHESIS!r} can't be followed by "
-    f"{TokenType.CLOSING_PARENTHESIS!r}"
+    "Token(type='opening_parenthesis') can't be followed by "
+    "Token(type='closing_parenthesis')"
 )
-CLOSING_PARENTHESIS_ERROR_MSG = (
-    f"{TokenType.CLOSING_PARENTHESIS!r} has never been openned with "
-    f"{TokenType.OPENING_PARENTHESIS!r}"
+CLOSING_PARENTHESIS_ERROR_MSG = ( 
+    "')' has never been openned with '('"
 )
 OPENING_PARENTHESIS_ERROR_MSG = (
-    f"{TokenType.OPENING_PARENTHESIS!r} has never been closed with "
-    f"{TokenType.CLOSING_PARENTHESIS!r}"
+    "'(' has never been closed with ')'"
 )
 
 class TestAnalyzer(TestCase):
