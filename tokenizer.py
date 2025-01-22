@@ -45,7 +45,10 @@ class Token:
 
 class UnsupportedLexemeError(Exception):
     """Unsupported lexeme encountered."""
-    def __init__(self, lexeme_value: str, position: int) -> None:
+    def __init__(
+        self, lexeme_value: str, position: int, last_visited_position: int | None = None
+    ) -> None:
+        self.last_visited_position = last_visited_position 
         super().__init__(
             f"Got unsupported lexeme at position {position}: '{lexeme_value}'"
         )
@@ -66,9 +69,15 @@ def tokenize(source_code: str) -> TokenizeResult:
             tokens.append(token)
             pos = token.position.stop + 1
         elif re.match(DIGIT, char):
-            token = _map_source_code_to_number_token(source_code, pos)
-            tokens.append(token)
-            pos = token.position.stop + 1
+            try:
+                token = _map_source_code_to_number_token(source_code, pos)
+            except UnsupportedLexemeError as exc:
+                assert exc.last_visited_position
+                pos = exc.last_visited_position
+                errors.append(exc)
+            else:
+                tokens.append(token)
+                pos = token.position.stop + 1
         elif char == OPENING_PARENTHESIS:
             tokens.append(Token(
                 type=TokenType.OPENING_PARENTHESIS,
@@ -163,7 +172,7 @@ def _map_source_code_to_number_token(
 
     if (is_consuming_fractional_part and fractional_digits_consumed_count == 0):
         raise UnsupportedLexemeError(
-            source_code[current_position:pos], current_position
+            source_code[current_position:pos], current_position, pos
         )
 
     return Token(
